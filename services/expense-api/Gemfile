@@ -1,0 +1,15 @@
+source "https://rubygems.org"
+
+gem "rails", "~> 7.1"
+gem "mysql2", "~> 0.5"
+gem "puma", "~> 6.0"
+gem "bootsnap", require: false
+
+# 認証: has_secure_password のパスワードハッシュ化と、APIトークンの発行・検証
+gem "bcrypt", "~> 3.1"
+gem "jwt", "~> 2.8"
+
+group :development, :test do
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+end

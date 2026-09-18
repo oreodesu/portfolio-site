@@ -1,0 +1,52 @@
+name: CI - expense-api (Rails)
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "services/expense-api/**"
+            - ".github/workflows/ci-expense-api.yml"
+    pull_request:
+        paths:
+            - "services/expense-api/**"
+            - ".github/workflows/ci-expense-api.yml"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: services/expense-api
+
+        services:
+            mysql:
+                image: mysql:8.0
+                env:
+                    MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+                    MYSQL_DATABASE: expense_db_test
+                ports:
+                    - 3306:3306
+                options: >-
+                    --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
+        env:
+            RAILS_ENV: test
+            DATABASE_HOST: 127.0.0.1
+            DATABASE_USER: root
+            DATABASE_PASSWORD: ""
+            DATABASE_NAME: expense_db
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: ruby/setup-ruby@v1
+              with:
+                  ruby-version: "3.3"
+                  bundler-cache: true
+                  working-directory: services/expense-api
+
+            # マイグレーションが通ることをスモークテストとして確認する。
+            # テストコード (RSpec) を追加したら、ここに `bundle exec rspec` を足す。
+            - run: bundle exec rails db:create db:migrate
+            - run: bundle exec rails db:create db:migrate
+            - run: bundle exec rspec

@@ -1,0 +1,34 @@
+name: CI - contact-app (Next.js)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/contact-app/**"
+      - ".github/workflows/ci-contact-app.yml"
+  pull_request:
+    paths:
+      - "services/contact-app/**"
+      - ".github/workflows/ci-contact-app.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/contact-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: services/contact-app/pnpm-lock.yaml
+
+      - run: pnpm install
+      - run: pnpm run build

@@ -1,0 +1,41 @@
+# env
+.env
+.env.*
+*.env.local
+
+# Go
+services/todo-api/tmp/
+services/todo-api/*.db
+services/todo-api/*.sqlite3
+
+# Node / React / Vue
+node_modules/
+frontend/dist/
+frontend/node_modules/
+frontend-urlshortener/dist/
+frontend-urlshortener/node_modules/
+*.tsbuildinfo
+
+# Next.js (contact-app)
+services/contact-app/.next/
+services/contact-app/next-env.d.ts
+
+# Ruby / Rails
+services/expense-api/log/
+services/expense-api/tmp/
+services/expense-api/.bundle/
+services/expense-api/vendor/bundle/
+
+# PHP
+services/urlshortener-api/vendor/
+services/urlshortener-api/composer.lock
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/*.tfvars
+!infra/terraform/terraform.tfvars.example
+
+# OS
+.DS_Store

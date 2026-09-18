@@ -1,0 +1,98 @@
+services:
+  # expense-api と urlshortener-api で共有する MySQL。
+  # 初回起動時に services/db-init 配下のSQLでDB/ユーザーを作成する。
+  db:
+    build: ./services/db-init
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      APP_EXPENSE_DB: ${MYSQL_EXPENSE_DB}
+      APP_EXPENSE_USER: ${MYSQL_EXPENSE_USER}
+      APP_EXPENSE_PASSWORD: ${MYSQL_EXPENSE_PASSWORD}
+      APP_SHORTENER_DB: ${MYSQL_SHORTENER_DB}
+      APP_SHORTENER_USER: ${MYSQL_SHORTENER_USER}
+      APP_SHORTENER_PASSWORD: ${MYSQL_SHORTENER_PASSWORD}
+      APP_CONTACT_DB: ${MYSQL_CONTACT_DB}
+      APP_CONTACT_USER: ${MYSQL_CONTACT_USER}
+      APP_CONTACT_PASSWORD: ${MYSQL_CONTACT_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  todo-api:
+    build: ./services/todo-api
+    restart: unless-stopped
+    environment:
+      TODO_API_PORT: ${TODO_API_PORT}
+      TODO_DB_PATH: ${TODO_DB_PATH}
+    volumes:
+      - todo-data:/data
+
+  expense-api:
+    build: ./services/expense-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: ${RAILS_ENV}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      DATABASE_HOST: db
+      DATABASE_NAME: ${MYSQL_EXPENSE_DB}
+      DATABASE_USER: ${MYSQL_EXPENSE_USER}
+      DATABASE_PASSWORD: ${MYSQL_EXPENSE_PASSWORD}
+      PORT: ${EXPENSE_API_PORT}
+
+  urlshortener-api:
+    build: ./services/urlshortener-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${MYSQL_SHORTENER_DB}
+      DB_USER: ${MYSQL_SHORTENER_USER}
+      DB_PASSWORD: ${MYSQL_SHORTENER_PASSWORD}
+      SHORTENER_BASE_URL: ${SHORTENER_BASE_URL}
+
+  contact-app:
+    build: ./services/contact-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${MYSQL_CONTACT_DB}
+      DB_USER: ${MYSQL_CONTACT_USER}
+      DB_PASSWORD: ${MYSQL_CONTACT_PASSWORD}
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+
+  frontend-urlshortener:
+    build: ./frontend-urlshortener
+    restart: unless-stopped
+
+  reverse-proxy:
+    build: ./nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - frontend-urlshortener
+      - todo-api
+      - expense-api
+      - urlshortener-api
+      - contact-app
+
+volumes:
+  db-data:
+  todo-data:

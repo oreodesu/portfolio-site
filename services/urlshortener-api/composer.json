@@ -1,0 +1,13 @@
+{
+    "name": "example/urlshortener-api",
+    "description": "URL shortener API (portfolio demo)",
+    "type": "project",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}
